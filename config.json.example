@@ -1,0 +1,8 @@
+{
+  "workos_session_token": "your_workos_cursor_session_token_here",
+  "workos_id": "your_workos_id_here",
+  "team_id": "your_team_id_here",
+  "user_id": "your_user_id_here",
+  "cursor_anonymous_id": "your_cursor_anonymous_id_here",
+  "statsig_stable_id": "your_statsig_stable_id_here"
+}

@@ -1,0 +1,17 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+venv/
+
+# 包含真实会话 Token，绝对不能提交
+config.json
+
+# IDE
+.idea/
+.vscode/
