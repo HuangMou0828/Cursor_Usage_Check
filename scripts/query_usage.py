@@ -74,6 +74,22 @@ def parse_date(date_str):
     raise ValueError(f"无法解析日期: {date_str}")
 
 
+def resolve_preset(preset, now):
+    """根据预设关键字返回 (start_date, end_date, label)，均为本地 naive datetime。"""
+    end = now.replace(hour=23, minute=59, second=59, microsecond=0)
+    if preset == "today":
+        start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        return start, end, "今日"
+    if preset == "week":
+        start_day = now - timedelta(days=now.weekday())
+        start = start_day.replace(hour=0, minute=0, second=0, microsecond=0)
+        return start, end, "本周（周一至今）"
+    if preset == "month":
+        start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        return start, end, "本月（1日至今）"
+    raise ValueError(f"未知 preset: {preset}（支持 today/week/month）")
+
+
 def _build_request(start_ts, end_ts, page, page_size, config):
     cookies = [
         f"WorkosCursorSessionToken={config['workos_session_token']}",
@@ -252,6 +268,11 @@ def main():
     parser = argparse.ArgumentParser(description="Cursor 使用量查询工具")
     parser.add_argument("--start", default="30 days ago", help="起始日期 YYYY-MM-DD（本地时区）")
     parser.add_argument("--end", default="today", help="截止日期 YYYY-MM-DD（本地时区）")
+    parser.add_argument(
+        "--preset",
+        choices=["today", "week", "month"],
+        help="预设时间窗口；指定时会覆盖 --start / --end",
+    )
     parser.add_argument("--page-size", type=int, default=500)
     parser.add_argument("--max-pages", type=int, default=50, help="最大分页数，防御性上限")
     parser.add_argument("--debug", action="store_true", help="打印分页进度并输出原始数据")
@@ -261,23 +282,28 @@ def main():
     config = ensure_config()
 
     now = datetime.now()
+    preset_label = None
 
-    if args.start == "30 days ago":
-        start_date = now - timedelta(days=30)
+    if args.preset:
+        start_date, end_date, preset_label = resolve_preset(args.preset, now)
     else:
-        start_date = parse_date(args.start)
-        if " " not in args.start and ":" not in args.start:
-            start_date = start_date.replace(hour=0, minute=0, second=0)
+        if args.start == "30 days ago":
+            start_date = now - timedelta(days=30)
+        else:
+            start_date = parse_date(args.start)
+            if " " not in args.start and ":" not in args.start:
+                start_date = start_date.replace(hour=0, minute=0, second=0)
 
-    if args.end == "today":
-        end_date = now
-    else:
-        end_date = parse_date(args.end)
-        if " " not in args.end and ":" not in args.end:
-            end_date = end_date.replace(hour=23, minute=59, second=59)
+        if args.end == "today":
+            end_date = now
+        else:
+            end_date = parse_date(args.end)
+            if " " not in args.end and ":" not in args.end:
+                end_date = end_date.replace(hour=23, minute=59, second=59)
 
     if not args.as_json:
-        print(f"查询时间范围: {start_date.strftime('%Y-%m-%d %H:%M')} ~ {end_date.strftime('%Y-%m-%d %H:%M')}")
+        prefix = f"[{preset_label}] " if preset_label else ""
+        print(f"{prefix}查询时间范围: {start_date.strftime('%Y-%m-%d %H:%M')} ~ {end_date.strftime('%Y-%m-%d %H:%M')}")
 
     events, total_count, raw_pages = query_usage(
         start_date, end_date, config,

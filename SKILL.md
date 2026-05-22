@@ -66,6 +66,11 @@ open ~/.openclaw/skills/cursor-usage/config.json
 ## 查询命令
 
 ```bash
+# 预设时间窗口（推荐）
+python3 ~/.openclaw/skills/cursor-usage/scripts/query_usage.py --preset today
+python3 ~/.openclaw/skills/cursor-usage/scripts/query_usage.py --preset week
+python3 ~/.openclaw/skills/cursor-usage/scripts/query_usage.py --preset month
+
 # 默认查最近 30 天（本地时区）
 python3 ~/.openclaw/skills/cursor-usage/scripts/query_usage.py
 
@@ -80,6 +85,16 @@ python3 ~/.openclaw/skills/cursor-usage/scripts/query_usage.py --debug
 ```
 
 脚本会**自动分页**拉取所有事件，并在数据不完整时给出警告。
+
+## 斜杠指令（Claude Code）
+
+仓库附带 3 个斜杠指令文件 `commands/cursor_usage_{today,week,month}.md`，安装到 `~/.claude/commands/` 后即可在对话中直接调用：
+
+- `/cursor_usage_today` — 今日
+- `/cursor_usage_week` — 本周
+- `/cursor_usage_month` — 本月
+
+安装命令见 [README.md](./README.md#claude-code-斜杠指令)。
 
 ---
 

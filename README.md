@@ -62,18 +62,22 @@ python3 ~/.openclaw/skills/cursor-usage/scripts/query_usage.py --start 2026-05-0
 
 ## 🛠️ 使用
 
+### CLI
+
 ```bash
+# 预设时间窗口（推荐）
+python3 scripts/query_usage.py --preset today   # 今日
+python3 scripts/query_usage.py --preset week    # 本周（周一至今）
+python3 scripts/query_usage.py --preset month   # 本月（1 日至今）
+
 # 默认查最近 30 天
 python3 scripts/query_usage.py
 
-# 指定日期范围（本地时区）
+# 自定义日期范围（本地时区）
 python3 scripts/query_usage.py --start 2026-05-01 --end 2026-05-21
 
-# 查今日
-python3 scripts/query_usage.py --start 2026-05-22 --end 2026-05-22
-
 # JSON 输出（适合二次处理）
-python3 scripts/query_usage.py --json
+python3 scripts/query_usage.py --preset week --json
 
 # 调试（打印分页进度和原始返回）
 python3 scripts/query_usage.py --debug
@@ -81,6 +85,27 @@ python3 scripts/query_usage.py --debug
 # 自定义分页参数
 python3 scripts/query_usage.py --page-size 1000 --max-pages 100
 ```
+
+### Claude Code 斜杠指令
+
+仓库内置 3 个 Claude Code 斜杠指令：
+
+| 指令 | 含义 |
+|------|------|
+| `/cursor_usage_today` | 查询今日用量 |
+| `/cursor_usage_week`  | 查询本周用量（周一至今） |
+| `/cursor_usage_month` | 查询本月用量（1 日至今） |
+
+**安装**（一次性，重启 Claude Code 后生效）：
+
+```bash
+mkdir -p ~/.claude/commands
+for f in cursor_usage_today cursor_usage_week cursor_usage_month; do
+  ln -sf ~/.openclaw/skills/cursor-usage/commands/$f.md ~/.claude/commands/$f.md
+done
+```
+
+> 用符号链接而不是复制，是为了让仓库 `git pull` 后斜杠指令自动同步最新版本。
 
 ### 输出示例
 
@@ -199,6 +224,10 @@ cursor-usage/
 ├── README.md                      # 本文件
 ├── config.json.example            # 配置示例
 ├── .gitignore
+├── commands/                      # Claude Code 斜杠指令源文件
+│   ├── cursor_usage_today.md
+│   ├── cursor_usage_week.md
+│   └── cursor_usage_month.md
 └── scripts/
     ├── extract_from_curl.py       # curl 命令解析器
     └── query_usage.py             # 用量查询主脚本
