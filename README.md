@@ -88,24 +88,41 @@ python3 scripts/query_usage.py --page-size 1000 --max-pages 100
 
 ### Claude Code 斜杠指令
 
-仓库内置 3 个 Claude Code 斜杠指令：
+仓库内置 4 个 Claude Code 斜杠指令：
 
 | 指令 | 含义 |
 |------|------|
-| `/cursor_usage_today` | 查询今日用量 |
-| `/cursor_usage_week`  | 查询本周用量（周一至今） |
-| `/cursor_usage_month` | 查询本月用量（1 日至今） |
+| `/cursor_usage_today`  | 查询今日用量 |
+| `/cursor_usage_week`   | 查询本周用量（周一至今） |
+| `/cursor_usage_month`  | 查询本月用量（1 日至今） |
+| `/cursor_usage_detail` | **本月 vs 上月环比对比**（同期 + 全月） |
 
 **安装**（一次性，重启 Claude Code 后生效）：
 
 ```bash
 mkdir -p ~/.claude/commands
-for f in cursor_usage_today cursor_usage_week cursor_usage_month; do
+for f in cursor_usage_today cursor_usage_week cursor_usage_month cursor_usage_detail; do
   ln -sf ~/.openclaw/skills/cursor-usage/commands/$f.md ~/.claude/commands/$f.md
 done
 ```
 
 > 用符号链接而不是复制，是为了让仓库 `git pull` 后斜杠指令自动同步最新版本。
+
+### 月度环比 (`compare_usage.py`)
+
+```bash
+python3 scripts/compare_usage.py         # 文本报告
+python3 scripts/compare_usage.py --json  # JSON 输出
+```
+
+会同时计算三段窗口：
+- **本月**：本月 1 日 ~ 今天
+- **上月同期**：上月 1 日 ~ 上月同一日（公平对比基准）
+- **上月全月**：上月 1 日 ~ 上月最后一天（仅供参考）
+
+并输出 Token / 费用 / 事件数的环比百分比（以"上月同期"为基准）。
+
+> 短月安全：今天是 3/31 时，上月同期会自动收缩到 2/28，不会越界。
 
 ### 输出示例
 
@@ -227,10 +244,12 @@ cursor-usage/
 ├── commands/                      # Claude Code 斜杠指令源文件
 │   ├── cursor_usage_today.md
 │   ├── cursor_usage_week.md
-│   └── cursor_usage_month.md
+│   ├── cursor_usage_month.md
+│   └── cursor_usage_detail.md
 └── scripts/
     ├── extract_from_curl.py       # curl 命令解析器
-    └── query_usage.py             # 用量查询主脚本
+    ├── query_usage.py             # 用量查询主脚本
+    └── compare_usage.py           # 本月 vs 上月环比对比
 ```
 
 ---

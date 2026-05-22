@@ -5,10 +5,13 @@ Cursor Usage Query Tool
 """
 
 import argparse
+import http.client
 import json
 import os
+import socket
 import ssl
 import sys
+import time
 from datetime import datetime, timedelta
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
@@ -149,18 +152,30 @@ def query_usage(start_date, end_date, config, page_size=500, debug=False, max_pa
     raw_pages = []
 
     for page in range(1, max_pages + 1):
-        req = _build_request(start_ts, end_ts, page, page_size, config)
-        try:
-            data = _do_request(req)
-        except HTTPError as e:
-            print(f"❌ HTTP Error: {e.code} {e.reason}")
+        data = None
+        last_err = None
+        for attempt in range(3):
+            req = _build_request(start_ts, end_ts, page, page_size, config)
             try:
-                print(f"   响应: {json.loads(e.read().decode())}")
-            except Exception:
-                print(f"   响应: {e.read().decode()[:500]}")
-            sys.exit(1)
-        except URLError as e:
-            print(f"❌ 网络错误: {e.reason}")
+                data = _do_request(req)
+                break
+            except HTTPError as e:
+                print(f"❌ HTTP Error: {e.code} {e.reason}")
+                try:
+                    print(f"   响应: {json.loads(e.read().decode())}")
+                except Exception:
+                    print(f"   响应: {e.read().decode()[:500]}")
+                sys.exit(1)
+            except (http.client.IncompleteRead, URLError, ConnectionError,
+                    socket.timeout, TimeoutError) as e:
+                last_err = e
+                if attempt < 2:
+                    if debug:
+                        print(f"[debug] page={page} attempt={attempt+1} 失败({type(e).__name__})，1.5s 后重试")
+                    time.sleep(1.5 * (attempt + 1))
+                    continue
+        if data is None:
+            print(f"❌ 拉取 page={page} 连续失败 3 次: {last_err}")
             sys.exit(1)
 
         raw_pages.append(data)

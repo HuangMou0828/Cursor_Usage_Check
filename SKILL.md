@@ -86,13 +86,22 @@ python3 ~/.openclaw/skills/cursor-usage/scripts/query_usage.py --debug
 
 脚本会**自动分页**拉取所有事件，并在数据不完整时给出警告。
 
+## 月度环比对比
+
+```bash
+python3 ~/.openclaw/skills/cursor-usage/scripts/compare_usage.py
+```
+
+自动计算本月 vs 上月同期 + 上月全月，输出 Token / 费用 / 事件数的环比变化与百分比。短月（如 2 月）会自动安全处理。
+
 ## 斜杠指令（Claude Code）
 
-仓库附带 3 个斜杠指令文件 `commands/cursor_usage_{today,week,month}.md`，安装到 `~/.claude/commands/` 后即可在对话中直接调用：
+仓库附带 4 个斜杠指令文件 `commands/cursor_usage_{today,week,month,detail}.md`，安装到 `~/.claude/commands/` 后即可在对话中直接调用：
 
 - `/cursor_usage_today` — 今日
 - `/cursor_usage_week` — 本周
 - `/cursor_usage_month` — 本月
+- `/cursor_usage_detail` — 本月 vs 上月环比
 
 安装命令见 [README.md](./README.md#claude-code-斜杠指令)。
 
