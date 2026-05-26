@@ -86,9 +86,11 @@ def resolve_preset(preset, now):
     if preset == "week":
         start_day = now - timedelta(days=now.weekday())
         start = start_day.replace(hour=0, minute=0, second=0, microsecond=0)
+        end = now.replace(hour=23, minute=59, second=59, microsecond=0)
         return start, end, "本周（周一至今）"
     if preset == "month":
         start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        end = now.replace(hour=23, minute=59, second=59, microsecond=0)
         return start, end, "本月（1日至今）"
     raise ValueError(f"未知 preset: {preset}（支持 today/week/month）")
 
